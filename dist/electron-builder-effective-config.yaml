@@ -1,0 +1,14 @@
+directories:
+  output: dist
+  buildResources: build
+appId: zzl.csiprint
+copyright: zzl
+productName: csiprint
+dmg:
+  background: mouse.png
+  window:
+    width: 800
+    height: 600
+win:
+  icon: mouse.png
+electronVersion: 2.0.0

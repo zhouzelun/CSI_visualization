@@ -4,6 +4,87 @@ const app = electron.app
 // Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow
 
+/***********************************************************************************************************/
+var mysql = require('mysql')
+var connection = mysql.createConnection(
+  {
+    host: 'localhost',
+    user: 'root',
+    password: '16899199',
+    database: 'csi_record'
+  }
+);
+connection.connect(function (err) {
+  if (err) {
+    console.error('error connecting:' + err.stack);
+    return;
+  }
+  console.log('connected as id ' + connection.threadId);
+});
+
+var data = [];
+var reals = [];
+var imags = [];
+var abs = [];
+var angle = [];
+var timereals = [];
+var timeimags = [];
+var timeabs = [];
+var timeangle = [];
+function myquery(){
+  data = [];
+  reals = [];
+  imags = [];
+  angle = []
+  abs= [];
+  
+  connection.query('select * from csi_table order by id desc limit 1', function (error, results, fields) {
+    data[0] = results[0].fir_l.split("|");
+    data[1] = results[0].sec_l.split("|");
+    data[2] = results[0].thr_l.split("|");
+    data[3] = results[0].for_l.split("|");
+    data[4] = results[0].fif_l.split("|");
+    data[5] = results[0].six_l.split("|");
+    data[6] = results[0].sev_l.split("|");
+    data[7] = results[0].eig_l.split("|");
+    data[8] = results[0].nin_l.split("|");
+    
+    for (var i = 0; i < 9; i++) {
+      //alert(i);
+      reals[i] = [];
+      imags[i] = [];
+      abs[i] = [];
+      angle[i] = [];
+      var count = 0;
+      data[i].forEach(
+        function (d) {
+          real_imag = d.split('&')
+          var a = +real_imag[0];
+          var b = +real_imag[1];
+          timereals[i][count].push();
+          reals[i].push(a);
+          imags[i].push(b);
+          abs[i].push(Math.sqrt(a*a+b*b));
+          angle[i].push(Math.atan(b/a));
+        }
+      );
+    }
+    global.sharedObject = {
+      realProperty: reals,
+      imagProperty: imags,
+      absPropert:abs,
+      anglePropert:angle
+    }
+  }
+  
+);
+}
+myquery();
+setInterval(myquery, 1000);
+/******************************************************************************************************************/
+
+
+
 const path = require('path')
 const url = require('url')
 
@@ -11,9 +92,9 @@ const url = require('url')
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
 
-function createWindow () {
+function createWindow() {
   // Create the browser window.
-  mainWindow = new BrowserWindow({width: 800, height: 600})
+  mainWindow = new BrowserWindow({ width: 800, height: 600 })
 
   // and load the index.html of the app.
   mainWindow.loadURL(url.format({
